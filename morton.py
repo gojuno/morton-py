@@ -46,6 +46,7 @@ class Morton(object):
             self.dimensions, self.bits)
 
     def split(self, value):
+        # type: (int) -> int
         masks = self.masks
         lshifts = self.lshifts
         for o in range(len(masks)):
@@ -53,13 +54,31 @@ class Morton(object):
         return value
 
     def compact(self, code):
+        # type: (int) -> int
         masks = self.masks
         rshifts = self.rshifts
         for o in range(len(masks)-1, -1, -1):
             code = (code | (code >> rshifts[o])) & masks[o]
         return code
 
+    def shift_sign(self, value):
+        # type: (int) -> int
+        assert not(value >= (1<<(self.bits-1)) or value <= -(1<<(self.bits-1))), (value, self.bits)
+        if value < 0:
+            value = -value
+            value |= 1 << (self.bits - 1)
+        return value
+
+    def unshift_sign(self, value):
+        # type: (int) -> int
+        sign = value & (1 << (self.bits - 1))
+        value &= (1 << (self.bits - 1)) - 1
+        if sign != 0:
+            value = -value
+        return value
+
     def pack(self, *args):
+        # type: (List[int]) -> int
         assert len(args) <= self.dimensions
         assert all([v < (1 << self.bits) for v in args])
 
@@ -69,7 +88,17 @@ class Morton(object):
         return code
 
     def unpack(self, code):
+        # type: (int) -> List[int]
         values = []
         for i in range(self.dimensions):
             values.append(self.compact(code >> i))
         return values
+
+    def spack(self, *args):
+        # type: (List[int]) -> int
+        return self.pack(*map(self.shift_sign, args))
+
+    def sunpack(self, code):
+        # type: (int) -> List[int]
+        values = self.unpack(code)
+        return list(map(self.unshift_sign, values))

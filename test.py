@@ -18,7 +18,7 @@ class TestMorton(unittest.TestCase):
             for values in cases:
                 code = m.pack(*values)
                 unpacked_values = m.unpack(code)
-                assert unpacked_values == values
+                assert unpacked_values == values, (unpacked_values, values)
 
         do_test(
             dimensions=2, bits=32,
@@ -68,6 +68,39 @@ class TestMorton(unittest.TestCase):
                 [2, 1],
                 [(1 << 64)-1, (1 << 64)-1],
             ])
+
+    def test_spacksunpack(self):
+
+        def do_test(dimensions, bits, cases):
+            m = Morton(dimensions, bits)
+            for values in cases:
+                code = m.spack(*values)
+                unpacked_values = m.sunpack(code)
+                assert unpacked_values == values, (unpacked_values, values)
+
+        do_test(
+            dimensions=2, bits=32,
+            cases=[
+                [1, 2],
+                [2, 1],
+                [(1<<31)-1, (1<<31)-1],
+                [1, 1],
+                [-1, -2],
+                [-2, -1],
+                [-((1 << 31) - 1), -((1 << 31) - 1)],
+                [-1, -1],
+            ])
+        do_test(
+            dimensions=4, bits=16,
+            cases=[
+                [1, 2, 4, 8],
+                [8, 4, 2, 1],
+                [(1<<15)-1, (1<<15)-1, (1<<15)-1, (1<<15)-1],
+                [-1, -2, -4, -8],
+                [-8, -4, -2, -1],
+                [-((1 << 15) - 1), -((1 << 15) - 1), -((1 << 15) - 1), -((1 << 15) - 1)],
+            ])
+
 
     def test_benchmark(self):
         m = Morton()
