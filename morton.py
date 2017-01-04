@@ -102,3 +102,9 @@ class Morton(object):
         # type: (int) -> List[int]
         values = self.unpack(code)
         return list(map(self.unshift_sign, values))
+
+    def __eq__(self, other):
+        return (
+            self.dimensions == other.dimensions and
+            self.bits == other.bits
+        )
