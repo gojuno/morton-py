@@ -1,5 +1,7 @@
+import sys
 
-class Morton(object):
+
+class _PyMorton(object):
 
     def __init__(self, dimensions=2, bits=32):
         assert dimensions > 0, 'dimensions should be greater than zero'
@@ -63,7 +65,10 @@ class Morton(object):
 
     def shift_sign(self, value):
         # type: (int) -> int
-        assert not(value >= (1<<(self.bits-1)) or value <= -(1<<(self.bits-1))), (value, self.bits)
+        assert not(
+            value >= (1<<(self.bits-1)) or
+            value <= -(1<<(self.bits-1))), (value, self.bits)
+
         if value < 0:
             value = -value
             value |= 1 << (self.bits - 1)
@@ -108,3 +113,13 @@ class Morton(object):
             self.dimensions == other.dimensions and
             self.bits == other.bits
         )
+
+
+if '__pypy__' in sys.builtin_module_names:
+    Morton = _PyMorton
+else:
+    try:
+        from _morton import _Morton
+        Morton = _Morton
+    except ImportError:
+        Morton = _PyMorton
