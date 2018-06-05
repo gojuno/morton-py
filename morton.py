@@ -40,6 +40,7 @@ class Morton(object):
         self.lshifts = [0] + lshifts
         self.rshifts = lshifts + [0]
         self.masks = [(1 << bits) - 1] + masks
+        self._size = self.bits * self.dimensions
 
     def __repr__(self):
         return '<Morton dimensions={}, bits={}>'.format(
@@ -80,7 +81,7 @@ class Morton(object):
     def pack(self, *args):
         # type: (List[int]) -> int
         assert len(args) <= self.dimensions
-        assert all([v < (1 << self.bits) for v in args])
+        assert all([(v < (1 << self.bits)) and (v >= 0) for v in args])
 
         code = 0
         for i in range(self.dimensions):
@@ -96,7 +97,9 @@ class Morton(object):
 
     def spack(self, *args):
         # type: (List[int]) -> int
-        return self.pack(*map(self.shift_sign, args))
+        code = self.pack(*map(self.shift_sign, args))
+        # convert from unsigned to signed
+        return code if code < ((1 << self._size - 1) - 1) else code - (1 << self._size)
 
     def sunpack(self, code):
         # type: (int) -> List[int]
