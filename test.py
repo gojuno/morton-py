@@ -73,8 +73,14 @@ class TestMorton(unittest.TestCase):
 
         def do_test(dimensions, bits, cases):
             m = Morton(dimensions, bits)
+            ssize = (bits * dimensions) - 1
+            low_range = (0 - (1 << ssize))
+            up_range = ((1 << ssize) - 1)
             for values in cases:
                 code = m.spack(*values)
+                # check signed range
+                assert code < up_range, (code, up_range, values)
+                assert code > low_range, (code, low_range, values)
                 unpacked_values = m.sunpack(code)
                 assert unpacked_values == values, (unpacked_values, values)
 
