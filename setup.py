@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name='morton-py',
-    version='1.2',
+    version='1.3',
     author='Andrew Kirilenko',
     author_email='iced@gojuno.com',
     maintainer='Alexander Verbitsky',
